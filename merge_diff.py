@@ -164,6 +164,12 @@ def merge_diff_json(js1:dict,js2:dict,pid:str,logs:dict)->dict:
     if dt1['data']['timestamp'] != dt2['data']['timestamp']:
         logs[pid] = 'not the same'
         return {}
+        """if dt1['data']['timestamp'] < dt2['data']['timestamp']:
+            logs[pid] = 'dt2'
+            return dt2
+        else:
+            logs[pid] = 'dt1'
+            return dt1"""
     if dt1['data']['comments']:
         for cm1 in dt1['data']['comments']:
             new_comments.append(cm1)
@@ -225,7 +231,7 @@ def merge_json(json_dif:dict):
     os.makedirs(log_path,exist_ok=True)
     logging_path = os.path.join(log_path,'merge_json_log.json')
     with open(logging_path,'wb+')as f:
-        f.write(json.dumps(logs,ensure_ascii=False).encode('utf-8'))
+        f.write(json.dumps(logs,ensure_ascii=False,indent=4).encode('utf-8'))
 
 def merge_img(json_dif:dict):
     logs = {}
@@ -256,7 +262,35 @@ def merge_img(json_dif:dict):
         print('%s finished'%pid)
     with open(os.path.join(ME,LOG,'merge_img_log.json'),'wb+') as f:
         f.write(json.dumps(logs,ensure_ascii=False,indent=4).encode('utf-8'))
-
+def merge_mov(json_dif:dict):
+    logs = {}
+    for pid,value in json_dif.items():
+        temp = {}
+        if value:
+            for fn,stat in value.items():
+                fsrc1 = os.path.join(OR,MOV,str(pid),fn)
+                fsrc2 = os.path.join(PG,MOV,str(pid),fn)
+                dst = os.path.join(ME,MOV,'%06d'%int(pid))
+                os.makedirs(dst,exist_ok=True)
+                if stat == 'same':
+                    pass
+                elif stat == 'dir1':
+                    shutil.copy(fsrc1,dst)
+                elif stat == 'dir2':
+                    shutil.copy(fsrc2,dst)
+                elif stat == 'different':
+                    flag = os.stat(fsrc1).st_size>os.stat(fsrc2).st_size
+                    if flag:
+                        temp[fn] = 'dir1' 
+                        shutil.copy(fsrc1,dst)
+                    else:
+                        temp[fn] = 'dir2'
+                        shutil.copy(fsrc2,dst)
+        if temp:
+            logs[pid] = temp
+        print('%s finished'%pid)
+    with open(os.path.join(ME,LOG,'merge_mov_log.json'),'wb+') as f:
+        f.write(json.dumps(logs,ensure_ascii=False,indent=4).encode('utf-8'))
 def find_mismatch():
     json_err = []
     dir1 = os.path.join(OR,JSON)
@@ -283,16 +317,21 @@ def find_mismatch():
     print(json_err)
 def main():
     #find_mismatch()
-    if 0:
+    if 1:
         #json_dif = json_diff()
         with open('json_diff.json','r',encoding='utf-8')as f:
             json_dif = json.load(f)
         merge_json(json_dif)
-    if 1:
+    if 0:
         #img_dif = img_diff()
         with open('img_diff.json','r',encoding='utf-8')as f:
             img_dif = json.load(f)
         merge_img(img_dif)
-    #mov_dif = mov_diff()
+    if 0:
+        #mov_dif = mov_diff()
+        with open('mov_diff.json','r',encoding='utf-8')as f:
+            mov_dif = json.load(f)
+        merge_mov(mov_dif)
+    
 if __name__ == '__main__':
     main()
