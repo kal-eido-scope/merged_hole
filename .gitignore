@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# DATA
+/new_hole_crawler_2.0
+/new_hole_crawler_pg_2.0
