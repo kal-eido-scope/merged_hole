@@ -85,7 +85,12 @@ def img_diff():
             img_diff[img_pid] = temp
             print('%s both'%img_pid)
         else:
-            img_diff[img_pid] = 'dir1'
+            img_or_pid_all = os.path.join(dir1,img_pid)
+            img_pg_pid_all = os.path.join(dir2,img_pid)
+            temp = {}
+            for imgn in os.listdir(img_or_pid_all):
+                temp[imgn] = 'dir1'
+            img_diff[img_pid] = temp
             print('%s dir1'%img_pid)
     if img_pg_temp:
         img_pg_temp2 = sorted(img_pg_temp,key=lambda x:int(x))
@@ -133,7 +138,12 @@ def mov_diff():
             img_diff[img_pid] = temp
             print('%s both'%img_pid)
         else:
-            img_diff[img_pid] = 'dir1'
+            img_or_pid_all = os.path.join(dir1,img_pid)
+            img_pg_pid_all = os.path.join(dir2,img_pid)
+            temp = {}
+            for imgn in os.listdir(img_or_pid_all):
+                temp[imgn] = 'dir1'
+            img_diff[img_pid] = temp
             print('%s dir1'%img_pid)
     if img_pg_temp:
         img_pg_temp2 = sorted(img_pg_temp,key=lambda x:int(x))
@@ -148,7 +158,7 @@ def mov_diff():
         f.write(json.dumps(img_diff,ensure_ascii=False,indent=4).encode('utf-8'))
 
 def main():
-    json_diff()
+    #json_diff()
     img_diff()
     mov_diff()
 if __name__ == '__main__':

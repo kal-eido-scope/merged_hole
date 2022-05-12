@@ -1,6 +1,6 @@
 import filecmp,copy,sys
 import os,json
-
+import shutil
 OR = 'new_hole_crawler_2.0'
 PG = 'new_hole_crawler_pg_2.0'
 ME = 'merged'
@@ -190,7 +190,7 @@ def merge_json(json_dif:dict):
     logs = {}
     try:
         for pid,value in json_dif.items():
-            if int(pid)<37602:
+            if int(pid)== 37603:
                 continue
             fn0 = os.path.join(dir0,'%06d.json'%int(pid))
             fn1 = os.path.join(dir1,'%06d.json'%int(pid))
@@ -223,9 +223,40 @@ def merge_json(json_dif:dict):
         print(e.__traceback__.tb_lineno)
     log_path = os.path.join(ME,LOG)
     os.makedirs(log_path,exist_ok=True)
-    logging_path = os.path.join(log_path,'merge_log.json')
+    logging_path = os.path.join(log_path,'merge_json_log.json')
     with open(logging_path,'wb+')as f:
         f.write(json.dumps(logs,ensure_ascii=False).encode('utf-8'))
+
+def merge_img(json_dif:dict):
+    logs = {}
+    for pid,value in json_dif.items():
+        temp = {}
+        if value:
+            for fn,stat in value.items():
+                fsrc1 = os.path.join(OR,IMG,str(pid),fn)
+                fsrc2 = os.path.join(PG,IMG,str(pid),fn)
+                dst = os.path.join(ME,IMG,'%06d'%int(pid))
+                os.makedirs(dst,exist_ok=True)
+                if stat == 'same':
+                    pass
+                elif stat == 'dir1':
+                    shutil.copy(fsrc1,dst)
+                elif stat == 'dir2':
+                    shutil.copy(fsrc2,dst)
+                elif stat == 'different':
+                    flag = os.stat(fsrc1).st_size>os.stat(fsrc2).st_size
+                    if flag:
+                        temp[fn] = 'dir1' 
+                        shutil.copy(fsrc1,dst)
+                    else:
+                        temp[fn] = 'dir2'
+                        shutil.copy(fsrc2,dst)
+        if temp:
+            logs[pid] = temp
+        print('%s finished'%pid)
+    with open(os.path.join(ME,LOG,'merge_img_log.json'),'wb+') as f:
+        f.write(json.dumps(logs,ensure_ascii=False,indent=4).encode('utf-8'))
+
 def find_mismatch():
     json_err = []
     dir1 = os.path.join(OR,JSON)
@@ -252,11 +283,16 @@ def find_mismatch():
     print(json_err)
 def main():
     #find_mismatch()
-    #json_dif = json_diff()
-    with open('json_diff.json','r',encoding='utf-8')as f:
-        json_dif = json.load(f)
-    merge_json(json_dif)
-    #img_dif = img_diff()
+    if 0:
+        #json_dif = json_diff()
+        with open('json_diff.json','r',encoding='utf-8')as f:
+            json_dif = json.load(f)
+        merge_json(json_dif)
+    if 1:
+        #img_dif = img_diff()
+        with open('img_diff.json','r',encoding='utf-8')as f:
+            img_dif = json.load(f)
+        merge_img(img_dif)
     #mov_dif = mov_diff()
 if __name__ == '__main__':
     main()
