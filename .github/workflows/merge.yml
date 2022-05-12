@@ -1,4 +1,4 @@
-name : Crawl New hole by pages
+name : Merge Data
 on :
   workflow_dispatch:
     
@@ -14,11 +14,6 @@ jobs:
       with:
         python-version: 3.7
     
-    - name: requirements
-      run: |
-        pip install requests
-        pip install argparse
-        pip install tqdm
     - name: get_data
       run: |
         git config --global user.email 1978633500@qq.com
